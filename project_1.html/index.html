@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nhật Ký Trực Tuyến</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+        }
+        .input-container {
+            background-color: #fff;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        textarea {
+            width: calc(100% - 10px);
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .post {
+            background-color: #fff;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            border-left: 5px solid #007bff;
+        }
+        .timestamp {
+            font-size: 0.8em;
+            color: #777;
+            margin-top: 5px;
+        }
+        #posts-container {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="input-container">
+        <h2>Nhập Văn Bản Mới</h2>
+        <textarea id="text-input" rows="5" placeholder="Nhập nội dung văn bản của bạn tại đây..."></textarea>
+        <button id="upload-button">Tải Lên</button>
+    </div>
+
+    <div id="posts-container">
+        <h2>Các Bài Đã Đăng</h2>
+        </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const textInput = document.getElementById('text-input');
+            const uploadButton = document.getElementById('upload-button');
+            const postsContainer = document.getElementById('posts-container');
+            const STORAGE_KEY = 'savedPosts';
+
+            // Hàm để lấy thời gian hiện tại theo định dạng
+            function getCurrentTimestamp() {
+                const now = new Date();
+                const day = String(now.getDate()).padStart(2, '0');
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const year = now.getFullYear();
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const seconds = String(now.getSeconds()).padStart(2, '0');
+                return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+            }
+
+            // Hàm để hiển thị một bài đăng
+            function displayPost(text, timestamp) {
+                const postDiv = document.createElement('div');
+                postDiv.classList.add('post');
+                postDiv.innerHTML = `<p>${text}</p><p class="timestamp">Đăng lúc: ${timestamp}</p>`;
+                postsContainer.appendChild(postDiv);
+            }
+
+            // Hàm để lưu trữ bài đăng vào Local Storage
+            function savePost(text) {
+                const timestamp = getCurrentTimestamp();
+                const newPost = { text: text, timestamp: timestamp };
+                let savedPosts = localStorage.getItem(STORAGE_KEY);
+                let postsArray = savedPosts ? JSON.parse(savedPosts) : [];
+                postsArray.push(newPost);
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(postsArray));
+                displayPost(text, timestamp);
+            }
+
+            // Load các bài đăng đã lưu khi trang được tải
+            function loadSavedPosts() {
+                const savedPosts = localStorage.getItem(STORAGE_KEY);
+                if (savedPosts) {
+                    const postsArray = JSON.parse(savedPosts);
+                    postsArray.forEach(post => {
+                        displayPost(post.text, post.timestamp);
+                    });
+                }
+            }
+
+            // Xử lý sự kiện khi nút tải lên được nhấp
+            uploadButton.addEventListener('click', () => {
+                const text = textInput.value.trim();
+                if (text !== '') {
+                    savePost(text);
+                    textInput.value = ''; // Xóa nội dung hộp thoại sau khi tải lên
+                } else {
+                    alert('Vui lòng nhập văn bản trước khi tải lên!');
+                }
+            });
+
+            // Tải các bài đăng đã lưu khi trang web được tải
+            loadSavedPosts();
+        });
+    </script>
+</body>
+</html>
